@@ -1,0 +1,269 @@
+<html class="dark"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(19, 127, 236, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(19, 127, 236, 0.4);
+        }
+        .recording {
+            animation: pulse 1s infinite;
+            color: red !important;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .video-modal.active {
+            display: flex;
+        }
+        .hidden { display: none !important; }
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            width: fit-content;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 overflow-hidden h-screen">
+<div class="flex h-full w-full">
+<!-- Left Sidebar -->
+<aside class="w-80 flex flex-col border-r border-slate-200 dark:border-primary/20 bg-white dark:bg-background-dark/50">
+<!-- Profile Section -->
+<div class="p-4 border-b border-slate-200 dark:border-primary/20">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="size-12 rounded-full bg-slate-200 dark:bg-primary/20 flex items-center justify-center">
+  <span class="material-symbols-outlined text-slate-500 !text-[32px]">
+    account_circle
+  </span>
+</div>
+<div class="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-white dark:border-background-dark rounded-full"></div>
+</div>
+<div class="flex flex-col">
+<h1 class="text-sm font-bold" id="currentUserName">Adınız soyadınız</h1>
+<p class="text-sm " id="currentUserDept">Onlayn</p>
+</div>
+</div>
+<div class="mt-4">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-primary/40 text-[20px]">search</span>
+<input class="w-full bg-slate-100 dark:bg-primary/10 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary placeholder:text-slate-400 dark:placeholder:text-primary/30" placeholder="İşçi axtar (ID, ad, şöbə)..." type="text" id="searchUserInput"/>
+</div>
+</div>
+</div>
+<!-- Employee List -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1" id="employeeList">
+<!-- Dinamik olaraq doldurulacaq -->
+</div>
+<!-- Footer Buttons -->
+<div class="p-4 border-t border-slate-200 dark:border-primary/20 bg-slate-50 dark:bg-transparent">
+<button class="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/10 text-slate-700 dark:text-slate-300 transition-colors" onclick="app.exportData()">
+<span class="material-symbols-outlined text-primary">backup</span>
+<span class="text-sm font-medium">Yedək Al</span>
+</button>
+<button class="flex items-center gap-3 w-full p-2 mt-1 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors" onclick="app.logout()">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-sm font-medium">Çıxış</span>
+</button>
+</div>
+</aside>
+<!-- Main Chat Area -->
+<main class="flex-1 flex flex-col bg-white dark:bg-background-dark">
+<!-- Chat Header -->
+<header class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-primary/20">
+<div class="flex items-center gap-4">
+<div class="relative">
+<div class="size-12 rounded-full bg-slate-200 dark:bg-primary/20 flex items-center justify-center">
+  <span class="material-symbols-outlined text-slate-500 !text-[32px]" id="chatUserAvatar">
+    account_circle
+  </span>
+</div>
+<div class="absolute bottom-0 right-0 size-2.5 bg-green-500 border-2 border-white dark:border-background-dark rounded-full" id="chatUserStatusDot"></div>
+</div>
+<div>
+<h2 class="font-bold text-base" id="chatUserName"></h2>
+<p class="text-[12px] text-500 font-medium" id="chatUserStatus"></p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-primary/10 transition-colors" onclick="app.startVideoCall()" title="Video Zəng">
+<span class="material-symbols-outlined text-slate-600 dark:text-primary">videocam</span>
+</button>
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-primary/10 transition-colors" onclick="app.startAudioCall()" title="Səsli Zəng">
+<span class="material-symbols-outlined text-slate-600 dark:text-primary">call</span>
+</button>
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-primary/10 transition-colors" onclick="app.shareScreen()" title="Ekran Paylaşımı">
+<span class="material-symbols-outlined text-slate-600 dark:text-primary">desktop_windows</span>
+</button>
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-primary/10 transition-colors ml-2">
+<span class="material-symbols-outlined text-slate-400">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Chat History -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" id="messagesContainer">
+<div class="flex items-center justify-center h-full text-slate-400 logo1">
+    
+<img src="http://azsoftware.az/wp-content/uploads/2022/10/logo-azsoftware@2x.png" alt="">
+</div>
+
+<div class="yazı"><p><span class="material-symbols-outlined">
+arrow_back
+</span>   Söhbət başlatmaq üçün sol tərəfdən istifadəçi seçin.</p></div>
+</div>
+<!-- Typing Indicator -->
+<div class="px-6 hidden" id="typingIndicator">
+    <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+    </div>
+</div>
+<!-- Message Input -->
+<div class="p-6">
+<div class="flex items-center gap-4 bg-slate-50 dark:bg-primary/5 p-2 px-4 rounded-xl border border-slate-200 dark:border-primary/20">
+<input type="file" id="fileInput" class="hidden" onchange="app.handleFileSelect(event)">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors" onclick="document.getElementById('fileInput').click()" title="Fayl göndər">attach_file</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2" placeholder="Mesaj yazın..." type="text" id="messageInput" oninput="app.onTyping()"/>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors" id="recordBtn" onclick="app.toggleRecording()" title="Səsli mesaj">mic</button>
+<button class="bg-primary text-white size-10 rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity" onclick="app.sendMessage()">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Sidebar -->
+<aside class="w-72 flex flex-col border-l border-slate-200 dark:border-primary/20 bg-white dark:bg-background-dark/50">
+<!-- Recent Files -->
+<div class="p-6">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-[20px]">folder_open</span>
+<h3 class="font-bold text-sm">Son Fayllar</h3>
+</div>
+<div class="space-y-3" id="recentFilesList">
+<!-- Fayllar buraya əlavə olunacaq -->
+</div>
+<button class="text-primary text-[11px] font-bold mt-4 hover:underline" onclick="app.loadAllFiles()">Hamısına bax</button>
+</div>
+<div class="px-6 border-t border-slate-200 dark:border-primary/20 my-4"></div>
+<!-- Active Calls -->
+<div class="p-6 flex-1">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-green-500 text-[20px]">call</span>
+<h3 class="font-bold text-sm">Aktiv Zənglər</h3>
+</div>
+<div class="p-4 rounded-xl border border-green-500/30 bg-green-500/5 hidden" id="activeCallBox">
+<div class="flex items-center gap-3">
+<div class="flex -space-x-3" id="callParticipants">
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold truncate" id="callStatus">Zəng hazırlanır...</p>
+<p class="text-[10px] text-green-500 animate-pulse" id="callDuration">00:00</p>
+</div>
+</div>
+<button class="w-full mt-3 py-1.5 bg-red-500 text-white text-[11px] font-bold rounded-lg hover:bg-red-600 transition-colors" onclick="app.endCall()">Sonlandır</button>
+</div>
+<div class="text-center text-slate-400 text-sm py-8" id="noCallMessage">
+    Aktiv zəng yoxdur
+</div>
+</div>
+</aside>
+</div>
+
+<!-- Video Call Modal -->
+<div class="video-modal" id="callModal">
+    <div class="bg-slate-900 rounded-xl p-4 max-w-4xl w-full mx-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-white font-bold" id="callTitle">Video Zəng</h3>
+            <button onclick="app.endCall()" class="text-white hover:text-red-500">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="relative">
+                <video id="localVideo" autoplay muted class="w-full rounded-lg bg-slate-800" style="max-height: 300px;"></video>
+                <span class="absolute bottom-2 left-2 text-white text-sm bg-black/50 px-2 py-1 rounded">Siz</span>
+            </div>
+            <div class="relative">
+                <video id="remoteVideo" autoplay class="w-full rounded-lg bg-slate-800" style="max-height: 300px;"></video>
+                <span class="absolute bottom-2 left-2 text-white text-sm bg-black/50 px-2 py-1 rounded" id="remoteUserName">Qarşı tərəf</span>
+            </div>
+        </div>
+        <div class="flex justify-center gap-4 mt-4">
+            <button onclick="app.toggleVideo()" class="p-3 rounded-full bg-slate-700 text-white hover:bg-slate-600" id="videoBtn">
+                <span class="material-symbols-outlined">videocam</span>
+            </button>
+            <button onclick="app.toggleAudio()" class="p-3 rounded-full bg-slate-700 text-white hover:bg-slate-600" id="audioBtn">
+                <span class="material-symbols-outlined">mic</span>
+            </button>
+            <button onclick="app.endCall()" class="p-3 rounded-full bg-red-500 text-white hover:bg-red-600">
+                <span class="material-symbols-outlined">call_end</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase və App -->
+<script type="module" src="app.js"></script>
+</body></html>
